@@ -1,0 +1,17 @@
+/_build
+/.credo
+/.elixir_ls/
+/.idea
+/.vscode
+/cover
+/deps
+/doc
+/docs
+/lib/my_first_credo_check.ex
+/test/fixtures/integration_diff_cloned_repo
+/tmp
+.tool-versions-e
+*.ez
+*.iml
+credo-debug-log.html
+erl_crash.dump
