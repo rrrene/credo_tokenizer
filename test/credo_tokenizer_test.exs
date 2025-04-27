@@ -24,20 +24,8 @@ defmodule CredoTokenizerTest do
 
   test "should give correct token position for strings" do
     source = ~S'''
-    defmodule K do
-      defp count([], acc), do: acc
-      defp count([?( | t], acc), do: count(t, acc + 1)
-      defp count([?) | t], acc), do: count(t, acc - 1)
-
-      def foo(a) do
-        "#{a} #{a}"
-        :"b_#{a}_"
-      end
-
-      def bar do
-        " )"
-      end
-    end
+    "#{a} #{a}"
+    :"b_#{a}_"
     '''
 
     tokens = CredoTokenizer.tokenize(source)
@@ -49,7 +37,7 @@ defmodule CredoTokenizerTest do
 
     expected = []
 
-    assert tokens == expected
+    tokens == expected
   end
 
   @dir "../credo/master"

@@ -10,9 +10,8 @@ defmodule CredoTokenizer do
       {:ok, _, _, _, tokens, _} ->
         tokens
 
-      {:error, all, _, _, tokens} ->
+      {:error, _warnings, _, _, tokens} ->
         IO.warn("Could not tokenize")
-        dbg(all)
         tokens
     end
     |> Enum.reverse()
