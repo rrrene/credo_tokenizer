@@ -57,6 +57,7 @@ extract([$\\, $#, ${ | Rest], Buffer, Output, Line, Column, Scope, true, Last) -
 
 extract([$#, ${ | Rest], Buffer, Output, Line, Column, Scope, true, Last) ->
   Output1 = build_string(Buffer, Output),
+  %erlang:display({extract1, Output1}),
   case credo_elixir_tokenizer:tokenize(Rest, Line, Column + 2, Scope#credo_elixir_tokenizer{terminators=[]}) of
     {error, {Location, _, "}"}, [$} | NewRest], Warnings, Tokens} ->
       NewScope = Scope#credo_elixir_tokenizer{warnings=Warnings},

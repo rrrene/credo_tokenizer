@@ -5,8 +5,8 @@ defmodule CredoTokenizer.GuardsTest do
   import CredoTokenizer.Guards
 
   test "should apply guard for opening parens correctly" do
-    Enum.each(["(", "[", "{"], fn source ->
-      [token] = CredoTokenizer.tokenize(source)
+    Enum.each(["(1+1)", "[1]", "{1}"], fn source ->
+      token = CredoTokenizer.tokenize(source) |> List.first()
 
       assert is_opening_paren(token)
       refute is_closing_paren(token)
@@ -14,8 +14,8 @@ defmodule CredoTokenizer.GuardsTest do
   end
 
   test "should apply guard for closing parens correctly" do
-    Enum.each([")", "]", "}"], fn source ->
-      [token] = CredoTokenizer.tokenize(source)
+    Enum.each(["(1+1)", "[1]", "{1}"], fn source ->
+      token = CredoTokenizer.tokenize(source) |> List.last()
 
       assert is_closing_paren(token)
       refute is_opening_paren(token)
