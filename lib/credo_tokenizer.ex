@@ -8,24 +8,18 @@ defmodule CredoTokenizer do
     |> :credo_elixir_tokenizer.tokenize(1, file: filename, unescape: false)
     |> case do
       {:ok, _, _, _, tokens, _} ->
-        tokens
+        normalized_tokens =
+          tokens
+          |> Enum.reverse()
+          |> Enum.map(&normalize/1)
 
-      {:error, warnings, _, _, tokens} ->
-        IO.warn("Could not tokenize: #{filename}")
-        IO.inspect(warnings)
-        tokens
+        {:ok, normalized_tokens}
+
+      {:error, warnings, _, _, raw_tokens} ->
+        # IO.warn("Could not tokenize: #{filename}")
+        # IO.inspect(warnings)
+        {:error, warnings, raw_tokens}
     end
-    |> Enum.reverse()
-    |> Enum.map(fn tokens ->
-      try do
-        normalize(tokens)
-      rescue
-        e ->
-          IO.inspect(filename)
-          IO.inspect(e)
-          reraise(e, __STACKTRACE__)
-      end
-    end)
   end
 
   # `normalize/1` normalizes the tokens into the following format:
