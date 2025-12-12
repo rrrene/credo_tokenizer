@@ -6,7 +6,7 @@ defmodule CredoTokenizer.GuardsTest do
 
   test "should apply guard for opening parens correctly" do
     Enum.each(["(1+1)", "[1]", "{1}"], fn source ->
-      token = CredoTokenizer.tokenize(source) |> List.first()
+      token = CredoTokenizer.tokenize!(source) |> List.first()
 
       assert is_opening_paren(token)
       refute is_closing_paren(token)
@@ -15,7 +15,7 @@ defmodule CredoTokenizer.GuardsTest do
 
   test "should apply guard for closing parens correctly" do
     Enum.each(["(1+1)", "[1]", "{1}"], fn source ->
-      token = CredoTokenizer.tokenize(source) |> List.last()
+      token = CredoTokenizer.tokenize!(source) |> List.last()
 
       assert is_closing_paren(token)
       refute is_opening_paren(token)
@@ -24,7 +24,7 @@ defmodule CredoTokenizer.GuardsTest do
 
   test "should apply guard for opening and closing parens correctly" do
     Enum.each(["()", "[]", "{}"], fn source ->
-      [left, right] = CredoTokenizer.tokenize(source)
+      [left, right] = CredoTokenizer.tokenize!(source)
 
       assert is_opening_paren(left)
       assert is_closing_paren(right)
@@ -34,7 +34,7 @@ defmodule CredoTokenizer.GuardsTest do
 
   test "should apply guard for opening and closing parens correctly with horizontal spacing" do
     Enum.each(["( )", "[ ]", "{ }"], fn source ->
-      [left, right] = CredoTokenizer.tokenize(source)
+      [left, right] = CredoTokenizer.tokenize!(source)
 
       assert is_opening_paren(left)
       assert is_closing_paren(right)
@@ -44,7 +44,7 @@ defmodule CredoTokenizer.GuardsTest do
 
   test "should apply guard for opening and closing parens correctly with vertical spacing" do
     Enum.each(["(\n )", "[\n ]", "{\n }"], fn source ->
-      tokens = CredoTokenizer.tokenize(source)
+      tokens = CredoTokenizer.tokenize!(source)
       left = List.first(tokens)
       right = List.last(tokens)
 
@@ -55,7 +55,7 @@ defmodule CredoTokenizer.GuardsTest do
   end
 
   test "should apply guard for eol" do
-    [token] = CredoTokenizer.tokenize("\n")
+    [token] = CredoTokenizer.tokenize!("\n")
 
     assert is_eol(token)
   end

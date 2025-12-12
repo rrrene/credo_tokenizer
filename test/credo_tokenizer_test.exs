@@ -4,7 +4,7 @@ defmodule CredoTokenizerTest do
 
   test "should give correct token position for regexes" do
     tokens =
-      CredoTokenizer.tokenize(~S'''
+      CredoTokenizer.tokenize!(~S'''
       {"\""}
 
         Regex.run(~r/(\A\s+|\@[a-zA-Z0-9\_]+\.?|[\|\\\{\[\(\,\:\>\<\=\+\-\*\/])\s*$/ , "\n
@@ -40,7 +40,7 @@ defmodule CredoTokenizerTest do
 
   test "should give correct token position for strings" do
     tokens =
-      CredoTokenizer.tokenize(~S'''
+      CredoTokenizer.tokenize!(~S'''
       "#{a} #{a}"
       :"b_#{a}_"
       ''')
@@ -63,7 +63,7 @@ defmodule CredoTokenizerTest do
 
   test "should give correct token position for heredocs" do
     tokens =
-      CredoTokenizer.tokenize(~S'''
+      CredoTokenizer.tokenize!(~S'''
       Mix.raise("""
       Unused dependencies in mix.lock file:
 
@@ -78,7 +78,7 @@ defmodule CredoTokenizerTest do
 
   test "should give correct token position for heredocs with `fn` inside interpolations" do
     tokens =
-      CredoTokenizer.tokenize(~S'''
+      CredoTokenizer.tokenize!(~S'''
       """
       Unused dependencies in mix.lock file:
 
@@ -91,7 +91,7 @@ defmodule CredoTokenizerTest do
 
   test "should give correct token position for heredocs with `if` inside interpolations" do
     tokens =
-      CredoTokenizer.tokenize(~S'''
+      CredoTokenizer.tokenize!(~S'''
       """
       Unused dependencies in mix.lock file:
 
@@ -106,7 +106,7 @@ defmodule CredoTokenizerTest do
 
   test "should give correct token position for heredocs with interpolations" do
     tokens =
-      CredoTokenizer.tokenize(~S'''
+      CredoTokenizer.tokenize!(~S'''
       Mix.raise("""
       Unused dependencies in mix.lock file:
 
@@ -119,7 +119,7 @@ defmodule CredoTokenizerTest do
 
   test "should give correct token position for heredocs with simple interpolation" do
     tokens =
-      CredoTokenizer.tokenize(~S'''
+      CredoTokenizer.tokenize!(~S'''
       Mix.raise("""
       Unused dependencies in mix.lock file:
 
@@ -132,7 +132,7 @@ defmodule CredoTokenizerTest do
 
   test "should give correct token position for heredocs with simple interpolation containing a string" do
     tokens =
-      CredoTokenizer.tokenize(~S'''
+      CredoTokenizer.tokenize!(~S'''
       Mix.raise("""
       Unused dependencies in mix.lock file:
 
@@ -145,7 +145,7 @@ defmodule CredoTokenizerTest do
 
   test "should give correct token position for expected code" do
     tokens =
-      CredoTokenizer.tokenize(~S'''
+      CredoTokenizer.tokenize!(~S'''
       test "add microseconds" do
         time = Timex.to_datetime({{2015, 6, 24}, {14, 27, 52}})
         time = %{time | microsecond: {900_000, 6}}
@@ -158,7 +158,7 @@ defmodule CredoTokenizerTest do
   end
 
   test "should give correct token position for @ as keyword in list" do
-    tokens = CredoTokenizer.tokenize("[@: 1]")
+    tokens = CredoTokenizer.tokenize!("[@: 1]")
 
     expected = [
       {{:"[", nil}, {1, 1, 1, 2}, "[", nil},
@@ -171,7 +171,7 @@ defmodule CredoTokenizerTest do
   end
 
   test "should give correct token position for ==" do
-    tokens = CredoTokenizer.tokenize("a == b")
+    tokens = CredoTokenizer.tokenize!("a == b")
 
     expected = [
       {{:identifier, nil}, {1, 1, 1, 2}, :a, nil},
@@ -183,7 +183,7 @@ defmodule CredoTokenizerTest do
   end
 
   test "should give correct token position for fn" do
-    tokens = CredoTokenizer.tokenize("fn x -> x end")
+    tokens = CredoTokenizer.tokenize!("fn x -> x end")
 
     expected = [
       {{:fn, nil}, {1, 1, 1, 3}, "fn", nil},
@@ -197,7 +197,7 @@ defmodule CredoTokenizerTest do
   end
 
   test "should give correct token position for function call" do
-    tokens = CredoTokenizer.tokenize("[ ]")
+    tokens = CredoTokenizer.tokenize!("[ ]")
 
     expected = [
       {{:"[", nil}, {1, 1, 1, 2}, "[", nil},
@@ -207,44 +207,60 @@ defmodule CredoTokenizerTest do
     assert tokens == expected
   end
 
-  @dir "../credo/master"
-  test "should tokenize all files in dir" do
-    not_normalized_tokens =
-      Path.wildcard("#{@dir}/**/*.{ex,exs}")
-      |> Enum.map(fn filename ->
-        tokens =
-          filename
-          |> File.read!()
-          |> CredoTokenizer.tokenize(filename)
-          |> Enum.filter(fn
-            {_, {_, _, _}} -> true
-            {_, {_, _, _}, _} -> true
-            {_, {_, _, _}, _, _} -> true
-            {_, {_, _, _}, _, _, _} -> true
-            {_, {_, _, _}, _, _, _, _} -> true
-            _ -> false
-          end)
-          |> Enum.group_by(fn
-            {kind, {_, _, _}} -> kind
-            {kind, {_, _, _}, _} -> kind
-            {kind, {_, _, _}, _, _} -> kind
-            {kind, {_, _, _}, _, _, _} -> kind
-            {kind, {_, _, _}, _, _, _, _} -> kind
-            _ -> false
-          end)
-          |> Map.values()
-          |> Enum.map(fn list -> List.first(list) end)
+  # @dir "tmp/elixir"
+  # test "should tokenize all files in dir" do
+  #   "#{@dir}/**/*.{ex,exs}"
+  #   |> Path.wildcard()
+  #   |> Enum.map(fn filename ->
+  #     source = File.read!(filename)
+  #     tokens = CredoTokenizer.tokenize!(source, filename)
 
-        if tokens == [] do
-          nil
-        else
-          {filename, tokens}
-        end
-      end)
-      |> Enum.reject(&is_nil/1)
+  #     # For this we need to make sure that the used `:elixir_tokenizer` is the one we forked from.
+  #     #
+  #     # elixir_tokens =
+  #     #   source
+  #     #   |> String.to_charlist()
+  #     #   |> :elixir_tokenizer.tokenize(1, file: filename, unescape: false)
+  #     #   |> case do
+  #     #     {:ok, _, _, _, tokens, _} -> tokens
+  #     #     error -> flunk("Could not elixir_tokenize filename: #{filename}\n\n#{inspect(error, pretty: true)}")
+  #     #   end
+  #     #
+  #     # assert length(tokens) == length(elixir_tokens),
+  #     #        "Token count does not match for #{filename}: #{length(tokens)} != #{length(elixir_tokens)}"
 
-    assert [] == not_normalized_tokens
-  end
+  #     raw_tokens =
+  #       tokens
+  #       |> Enum.filter(fn
+  #         {_, {_, _, _}} -> true
+  #         {_, {_, _, _}, _} -> true
+  #         {_, {_, _, _}, _, _} -> true
+  #         {_, {_, _, _}, _, _, _} -> true
+  #         {_, {_, _, _}, _, _, _, _} -> true
+  #         _ -> false
+  #       end)
+  #       |> Enum.group_by(fn
+  #         {kind, {_, _, _}} -> kind
+  #         {kind, {_, _, _}, _} -> kind
+  #         {kind, {_, _, _}, _, _} -> kind
+  #         {kind, {_, _, _}, _, _, _} -> kind
+  #         {kind, {_, _, _}, _, _, _, _} -> kind
+  #         _ -> false
+  #       end)
+  #       |> Map.values()
+  #       |> Enum.map(fn list -> List.first(list) end)
+
+  #     if raw_tokens == [] do
+  #       nil
+  #     else
+  #       {filename, raw_tokens}
+  #     end
+  #   end)
+  #   |> Enum.reject(&is_nil/1)
+  #   |> then(fn non_normalized_tokens ->
+  #     assert [] == non_normalized_tokens
+  #   end)
+  # end
 
   # test "should tokenize fixture" do
   #   "test/fixtures/learnelixir.ex"

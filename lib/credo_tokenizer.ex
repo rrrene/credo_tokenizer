@@ -22,6 +22,14 @@ defmodule CredoTokenizer do
     end
   end
 
+  @doc false
+  def tokenize!(source \\ "", filename \\ "nofile") do
+    case tokenize(source, filename) do
+      {:ok, tokens} -> tokens
+      error -> raise "Could not tokenize: #{filename}\n\n#{inspect(error, pretty: true)}"
+    end
+  end
+
   # `normalize/1` normalizes the tokens into the following format:
   #
   #     {
