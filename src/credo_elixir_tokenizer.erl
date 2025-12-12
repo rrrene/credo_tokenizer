@@ -258,7 +258,6 @@ tokenize([$?, Char | T], Line, Column, Scope, Tokens) ->
 % Heredocs
 
 tokenize("\"\"\"" ++ T, Line, Column, Scope, Tokens) ->
-  %erlang:display({tokenize, handle_heredocs}),
   handle_heredocs(T, Line, Column, $", Scope, Tokens);
 
 %% TODO: Remove me in Elixir v2.0
@@ -766,23 +765,18 @@ handle_char(_)  -> false.
 %% Handlers
 
 handle_heredocs(T, Line, Column, H, Scope, Tokens) ->
-  %erlang:display({handle_heredocs1, T}),
   case extract_heredoc_with_interpolation(Line, Column, Scope, true, T, H) of
     {ok, NewLine, NewColumn, Parts, Rest, NewScope} ->
-      %erlang:display({handle_heredocs2}),
       case unescape_tokens(Parts, Line, Column, NewScope) of
         {ok, Unescaped} ->
-          %erlang:display({handle_heredocs3}),
           Token = {heredoc_type(H), {Line, Column, nil, NewLine, NewColumn}, NewColumn - 4, Unescaped},
           tokenize(Rest, NewLine, NewColumn, NewScope, [Token | Tokens]);
 
         {error, Reason} ->
-          %erlang:display({handle_heredocs4}),
           error(Reason, Rest, Scope, Tokens)
       end;
 
     {error, Reason} ->
-      %erlang:display({handle_heredocs5}),
       error(Reason, [H, H, H] ++ T, Scope, Tokens)
   end.
 
@@ -1060,16 +1054,13 @@ collect_modifiers(Rest, Buffer) ->
 %% Heredocs
 
 extract_heredoc_with_interpolation(Line, Column, Scope, Interpol, T, H) ->
-  %erlang:display({extract_heredoc_with_interpolation1}),
   case extract_heredoc_header(T) of
     {ok, Headerless} ->
       %% We prepend a new line so we can transparently remove
       %% spaces later. This new line is removed by calling "tl"
       %% in the final heredoc body three lines below.
-      %%erlang:display({extract_heredoc_with_interpolation2, [H,H,H], T}),
       case credo_elixir_interpolation:extract(Line, Column, Scope, Interpol, [$\n|Headerless], [H,H,H]) of
         {NewLine, NewColumn, Parts0, Rest, InterScope} ->
-          %%erlang:display({extract_heredoc_with_interpolation3}),
           Indent = NewColumn - 4,
           Fun = fun(Part, Acc) -> extract_heredoc_indent(Part, Acc, Indent) end,
           {Parts1, {ShouldWarn, _}} = lists:mapfoldl(Fun, {false, Line}, Parts0),
@@ -1078,12 +1069,10 @@ extract_heredoc_with_interpolation(Line, Column, Scope, Interpol, T, H) ->
           {ok, NewLine, NewColumn, tokens_to_binary(Parts2), Rest, NewScope};
 
         {error, Reason} ->
-          %%erlang:display({extract_heredoc_with_interpolation4, Reason}),
           {error, interpolation_format(Reason, " (for heredoc starting at line ~B)", [Line], Line, Column, [H, H, H], [H, H, H])}
       end;
 
     error ->
-      %%erlang:display({extract_heredoc_with_interpolation5, error}),
       Message = "heredoc allows only whitespace characters followed by a new line after opening ",
       {error, {?LOC(Line, Column + 3), io_lib:format(Message, []), [H, H, H]}}
   end.
@@ -1095,7 +1084,6 @@ extract_heredoc_header("\n" ++ Rest) ->
 extract_heredoc_header([H | T]) when ?is_horizontal_space(H) ->
   extract_heredoc_header(T);
 extract_heredoc_header(_) ->
-  %%erlang:display({extract_heredoc_header1, Rest}),
   error.
 
 extract_heredoc_indent(Part, {Warned, Line}, Indent) when is_list(Part) ->
@@ -1413,7 +1401,6 @@ interpolation_format({_, _, _} = Reason, _Extension, _Args, _Line, _Column, _Ope
 %% Terminators
 
 handle_terminator(Rest, _, _, Scope, {'(', {Line, Column, _}}, [{alias, _, Alias} | Tokens]) when is_atom(Alias) ->
-  %erlang:display({handle_terminator1}),
   Reason =
     io_lib:format(
       "unexpected ( after alias ~ts. Function names and identifiers in Elixir "
@@ -1429,7 +1416,6 @@ handle_terminator(Rest, _, _, Scope, {'(', {Line, Column, _}}, [{alias, _, Alias
 
   error({?LOC(Line, Column), Reason, ["("]}, atom_to_list(Alias) ++ [$( | Rest], Scope, Tokens);
 handle_terminator(Rest, Line, Column, #credo_elixir_tokenizer{terminators=none} = Scope, Token, Tokens) ->
-  %erlang:display({handle_terminator2}),
   tokenize(Rest, Line, Column, Scope, [Token | Tokens]);
 handle_terminator(Rest, Line, Column, Scope, Token, Tokens) ->
   #credo_elixir_tokenizer{terminators=Terminators} = Scope,
@@ -1438,43 +1424,34 @@ handle_terminator(Rest, Line, Column, Scope, Token, Tokens) ->
       {Start, {Line2, Column2, Info2}} -> {Start, {Line2, Column2, Info2, Line2, Column2 + length(atom_to_list(Start))}};
       Value -> Value
     end,
-  %erlang:display({handle_terminator3, token2, Token2}),
-  %erlang:display({handle_terminator3, terminators, Terminators}),
   case check_terminator(Token2, Terminators, Scope) of
     {error, Reason} ->
-      %erlang:display({handle_terminator4}),
       error(Reason, atom_to_list(element(1, Token2)) ++ Rest, Scope, Tokens);
     {ok, New} ->
-      %erlang:display({handle_terminator5, New}),
       tokenize(Rest, Line, Column, New, [Token2 | Tokens])
   end.
 
 check_terminator({Start, Meta}, Terminators, Scope)
     when Start == '('; Start == '['; Start == '{'; Start == '<<' ->
-  %erlang:display({check_terminator1, {Start, Meta}}),
   Indentation = Scope#credo_elixir_tokenizer.indentation,
   {ok, Scope#credo_elixir_tokenizer{terminators=[{Start, Meta, Indentation} | Terminators]}};
 
 check_terminator({Start, Meta}, Terminators, Scope) when Start == 'fn'; Start == 'do' ->
-  %erlang:display({check_terminator2, Start}),
   Indentation = Scope#credo_elixir_tokenizer.indentation,
 
   NewScope =
     case Terminators of
       %% If the do is indented equally or less than the previous do, it may be a missing end error!
       [{Start, _, PreviousIndentation} = Previous | _] when Indentation =< PreviousIndentation ->
-        %erlang:display({check_terminator2_1, Previous}),
         Scope#credo_elixir_tokenizer{mismatch_hints=[Previous | Scope#credo_elixir_tokenizer.mismatch_hints]};
 
       _ ->
-        %erlang:display({check_terminator2_2}),
         Scope
     end,
 
   {ok, NewScope#credo_elixir_tokenizer{terminators=[{Start, Meta, Indentation} | Terminators]}};
 
 check_terminator({'end', {EndLine, _, _, _, _}}, [{'do', {_, _, Indentation, _, _}, _} | Terminators], Scope) ->
-  %erlang:display({cCCCCcheck_terminator3}),
   NewScope =
     %% If the end is more indented than the do, it may be a missing do error!
     case Scope#credo_elixir_tokenizer.indentation > Indentation of
@@ -1490,7 +1467,6 @@ check_terminator({'end', {EndLine, _, _, _, _}}, [{'do', {_, _, Indentation, _, 
 
 check_terminator({End, {EndLine, EndColumn, _, _, _}}, [{Start, {StartLine, StartColumn, _, _, _}, _} | Terminators], Scope)
     when End == 'end'; End == ')'; End == ']'; End == '}'; End == '>>' ->
-  %erlang:display({check_terminator4}),
   case terminator(Start) of
     End ->
       {ok, Scope#credo_elixir_tokenizer{terminators=Terminators}};
@@ -1510,7 +1486,6 @@ check_terminator({End, {EndLine, EndColumn, _, _, _}}, [{Start, {StartLine, Star
   end;
 
 check_terminator({'end', {Line, Column, _, _, _}}, [], #credo_elixir_tokenizer{mismatch_hints=Hints}) ->
-  %erlang:display({check_terminator5}),
   Suffix =
     case lists:keyfind('end', 1, Hints) of
       {'end', HintLine, _Indentation} ->
@@ -1524,7 +1499,6 @@ check_terminator({'end', {Line, Column, _, _, _}}, [], #credo_elixir_tokenizer{m
 
 check_terminator({End, {Line, Column, _, _, _}}, [], _Scope)
     when End == ')'; End == ']'; End == '}'; End == '>>' ->
-  %erlang:display({check_terminator5}),
   {error, {?LOC(Line, Column), "unexpected token: ", atom_to_list(End)}};
 
 check_terminator(_, _, Scope) ->
@@ -1585,13 +1559,10 @@ keyword_or_unsafe_to_atom(_, Part, Line, Column, Scope) ->
   unsafe_to_atom(Part, Line, Column, Scope).
 
 tokenize_keyword(terminator, Rest, Line, Column, Atom, Length, Scope, Tokens) ->
-  %erlang:display({tokenize_keyword1, Atom}),
   case tokenize_keyword_terminator(Line, Column, Atom, Tokens) of
     {ok, [Check | T]} ->
-      %erlang:display({tokenize_keyword2, Check}),
       handle_terminator(Rest, Line, Column + Length, Scope, Check, T);
     {error, Message, Token} ->
-      %erlang:display({tokenize_keyword3, Message}),
       error({?LOC(Line, Column), Message, Token}, Token ++ Rest, Scope, Tokens)
   end;
 
