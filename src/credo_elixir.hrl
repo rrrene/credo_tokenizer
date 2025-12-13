@@ -72,7 +72,7 @@
   existing_atoms_only=false,
   static_atoms_encoder=nil,
   preserve_comments=nil,
-  identifier_tokenizer=elixir_tokenizer,
+  identifier_tokenizer=credo_elixir_tokenizer,
   ascii_identifiers_only=true,
   indentation=0,
   column=1,

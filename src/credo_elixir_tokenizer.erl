@@ -198,11 +198,11 @@ tokenize([$0, $o, H | T], Line, Column, Scope, Tokens) when ?is_octal(H) ->
 
 tokenize([$# | String], Line, Column, Scope, Tokens) ->
   case tokenize_comment(String, [$#]) of
-    {error, Char} ->
-      error_comment(Char, [$# | String], Line, Column, Scope, Tokens);
+    {error, Char, Reason} ->
+      error_comment(Char, Reason, [$# | String], Line, Column, Scope, Tokens);
     {Rest, Comment} ->
-      Token = {comment, {Line, Column, nil, Line, Column + length(Comment)}, Comment},
-      tokenize(Rest, Line, Column, Scope, [Token | reset_eol(Tokens)])
+      preserve_comments(Line, Column, Tokens, Comment, Rest, Scope),
+      tokenize(Rest, Line, Column, Scope, reset_eol(Tokens))
   end;
 
 % Sigils
@@ -241,7 +241,14 @@ tokenize([$?, $\\, H | T], Line, Column, Scope, Tokens) ->
   end,
 
   Token = {char, {Line, Column, [$?, $\\, H], Line, Column + 3}, Char},
-  tokenize(T, Line, Column + 3, NewScope, [Token | Tokens]);
+  case H of
+    $\n ->
+      %% If original char is a literal line feed, we already emit a warning,
+      %% but we need to bump the line without emitting an EOL token.
+      tokenize_eol(T, Line, NewScope, [Token | Tokens]);
+    _ ->
+      tokenize(T, Line, Column + 3, NewScope, [Token | Tokens])
+  end;
 
 tokenize([$?, Char | T], Line, Column, Scope, Tokens) ->
   NewScope = case handle_char(Char) of
@@ -253,7 +260,14 @@ tokenize([$?, Char | T], Line, Column, Scope, Tokens) ->
       Scope
   end,
   Token = {char, {Line, Column, [$?, Char], Line, Column + 2}, Char},
-  tokenize(T, Line, Column + 2, NewScope, [Token | Tokens]);
+  case Char of
+    $\n ->
+      %% If original char is a literal line feed, we already emit a warning,
+      %% but we need to bump the line without emitting an EOL token.
+      tokenize_eol(T, Line, NewScope, [Token | Tokens]);
+    _ ->
+      tokenize(T, Line, Column + 2, NewScope, [Token | Tokens])
+  end;
 
 % Heredocs
 
@@ -734,8 +748,8 @@ tokenize_dot(T, Line, Column, DotInfo, Scope, Tokens) ->
   case strip_horizontal_space(T, 0) of
     {[$# | R], _} ->
       case tokenize_comment(R, [$#]) of
-        {error, Char} ->
-          error_comment(Char, [$# | R], Line, Column, Scope, Tokens);
+        {error, Char, Reason} ->
+          error_comment(Char, Reason, [$# | R], Line, Column, Scope, Tokens);
 
         {Rest, Comment} ->
           preserve_comments(Line, Column, Tokens, Comment, Rest, Scope),
@@ -862,8 +876,18 @@ handle_unary_op(Rest, Line, Column, Kind, Length, Op, Scope, Tokens) ->
       Token = {identifier, {Line, Column, nil, Line, Column + Length + Extra}, Op},
       tokenize(Remaining, Line, Column + Length + Extra, Scope, [Token | Tokens]);
     {Remaining, Extra} ->
+      NewScope =
+        %% TODO: Remove these deprecations on Elixir v2.0
+        case Op of
+          '~~~' ->
+            Msg = "~~~ is deprecated. Use Bitwise.bnot/1 instead for clarity",
+            prepend_warning(Line, Column, Msg, Scope);
+          _ ->
+            Scope
+        end,
+
       Token = {Kind, {Line, Column, nil, Line, Column + Length + Extra}, Op},
-      tokenize(Remaining, Line, Column + Length + Extra, Scope, [Token | Tokens])
+      tokenize(Remaining, Line, Column + Length + Extra, NewScope, [Token | Tokens])
   end.
 
 handle_op([$: | Rest], Line, Column, _Kind, Length, Op, Scope, Tokens) when ?is_space(hd(Rest)) ->
@@ -881,10 +905,6 @@ handle_op(Rest, Line, Column, Kind, Length, Op, Scope, Tokens) ->
         case Op of
           '^^^' ->
             Msg = "^^^ is deprecated. It is typically used as xor but it has the wrong precedence, use Bitwise.bxor/2 instead",
-            prepend_warning(Line, Column, Msg, Scope);
-
-          '~~~' ->
-            Msg = "~~~ is deprecated. Use Bitwise.bnot/1 instead for clarity",
             prepend_warning(Line, Column, Msg, Scope);
 
           '<|>' ->
@@ -948,17 +968,22 @@ handle_dot([$., H | T] = Original, Line, Column, DotInfo, BaseScope, Tokens) whe
           InterScope
       end,
 
-      {ok, [UnescapedPart]} = unescape_tokens([Part], Line, Column, NewScope),
+      case unescape_tokens([Part], Line, Column, NewScope) of
+        {ok, [UnescapedPart]} ->
+          case unsafe_to_atom(UnescapedPart, Line, Column, NewScope) of
+            {ok, Atom} ->
+              Token = check_call_identifier(Line, Column, H, Atom, Rest),
+              TokensSoFar = add_token_with_eol({'.', DotInfo}, Tokens),
+              tokenize(Rest, NewLine, NewColumn, NewScope, [Token | TokensSoFar]);
 
-      case unsafe_to_atom(UnescapedPart, Line, Column, NewScope) of
-        {ok, Atom} ->
-          Token = check_call_identifier(Line, Column, H, Atom, Rest),
-          TokensSoFar = add_token_with_eol({'.', DotInfo}, Tokens),
-          tokenize(Rest, NewLine, NewColumn, NewScope, [Token | TokensSoFar]);
+            {error, Reason} ->
+              error(Reason, Original, NewScope, Tokens)
+          end;
 
         {error, Reason} ->
           error(Reason, Original, NewScope, Tokens)
       end;
+
     {_NewLine, _NewColumn, _Parts, Rest, NewScope} ->
       Message = "interpolation is not allowed when calling function/macro. Found interpolation in a call starting with: ",
       error({?LOC(Line, Column), Message, [H]}, Rest, NewScope, Tokens);
@@ -1018,32 +1043,94 @@ is_unnecessary_quote(_Parts, _Scope) ->
 unsafe_to_atom(Part, Line, Column, #credo_elixir_tokenizer{}) when
     is_binary(Part) andalso byte_size(Part) > 255;
     is_list(Part) andalso length(Part) > 255 ->
-  {error, {?LOC(Line, Column), "atom length must be less than system limit: ", elixir_utils:characters_to_list(Part)}};
+  try
+    PartList = elixir_utils:characters_to_list(Part),
+    {error, {?LOC(Line, Column), "atom length must be less than system limit: ", PartList}}
+  catch
+    error:#{'__struct__' := 'Elixir.UnicodeConversionError', message := Message} ->
+      {error, {?LOC(Line, Column), "invalid encoding in atom: ", elixir_utils:characters_to_list(Message)}}
+  end;
 unsafe_to_atom(Part, Line, Column, #credo_elixir_tokenizer{static_atoms_encoder=StaticAtomsEncoder}) when
     is_function(StaticAtomsEncoder) ->
-  Value = elixir_utils:characters_to_binary(Part),
-  case StaticAtomsEncoder(Value, [{line, Line}, {column, Column}]) of
-    {ok, Term} ->
-      {ok, Term};
-    {error, Reason} when is_binary(Reason) ->
-      {error, {?LOC(Line, Column), elixir_utils:characters_to_list(Reason) ++ ": ", elixir_utils:characters_to_list(Part)}}
+  EncodeResult = try
+    ValueEncBin = elixir_utils:characters_to_binary(Part),
+    ValueEncList = elixir_utils:characters_to_list(Part),
+    {ok, ValueEncBin, ValueEncList}
+  catch
+    error:#{'__struct__' := 'Elixir.UnicodeConversionError', message := Message} ->
+      {error, {?LOC(Line, Column), "invalid encoding in atom: ", elixir_utils:characters_to_list(Message)}}
+  end,
+
+  case EncodeResult of
+    {ok, Value, ValueList} ->
+      case StaticAtomsEncoder(Value, [{line, Line}, {column, Column}]) of
+        {ok, Term} ->
+          {ok, Term};
+        {error, Reason} when is_binary(Reason) ->
+          {error, {?LOC(Line, Column), elixir_utils:characters_to_list(Reason) ++ ": ", ValueList}}
+      end;
+    EncError -> EncError
   end;
 unsafe_to_atom(Binary, Line, Column, #credo_elixir_tokenizer{existing_atoms_only=true}) when is_binary(Binary) ->
   try
     {ok, binary_to_existing_atom(Binary, utf8)}
   catch
-    error:badarg -> {error, {?LOC(Line, Column), "unsafe atom does not exist: ", elixir_utils:characters_to_list(Binary)}}
+    error:badarg ->
+      % Check if it's a UTF-8 issue by trying to convert to list
+      try
+        List = elixir_utils:characters_to_list(Binary),
+        % If we get here, it's not a UTF-8 issue
+        {error, {?LOC(Line, Column), "unsafe atom does not exist: ", List}}
+      catch
+        error:#{'__struct__' := 'Elixir.UnicodeConversionError', message := Message} ->
+          {error, {?LOC(Line, Column), "invalid encoding in atom: ", elixir_utils:characters_to_list(Message)}}
+      end
   end;
-unsafe_to_atom(Binary, _Line, _Column, #credo_elixir_tokenizer{}) when is_binary(Binary) ->
-  {ok, binary_to_atom(Binary, utf8)};
+unsafe_to_atom(Binary, Line, Column, #credo_elixir_tokenizer{}) when is_binary(Binary) ->
+  try
+    {ok, binary_to_atom(Binary, utf8)}
+  catch
+    error:badarg ->
+      % Try to convert using elixir_utils to get proper UnicodeConversionError
+      try
+        List = elixir_utils:characters_to_list(Binary),
+        % If we get here, it's not a UTF-8 issue, so it's some other badarg
+        {error, {?LOC(Line, Column), "invalid atom: ", List}}
+      catch
+        error:#{'__struct__' := 'Elixir.UnicodeConversionError', message := Message} ->
+          {error, {?LOC(Line, Column), "invalid encoding in atom: ", elixir_utils:characters_to_list(Message)}}
+      end
+  end;
 unsafe_to_atom(List, Line, Column, #credo_elixir_tokenizer{existing_atoms_only=true}) when is_list(List) ->
   try
     {ok, list_to_existing_atom(List)}
   catch
-    error:badarg -> {error, {?LOC(Line, Column), "unsafe atom does not exist: ", List}}
+    error:badarg ->
+      % Try to convert using elixir_utils to get proper UnicodeConversionError
+      try
+        elixir_utils:characters_to_binary(List),
+        % If we get here, it's not a UTF-8 issue
+        {error, {?LOC(Line, Column), "unsafe atom does not exist: ", List}}
+      catch
+        error:#{'__struct__' := 'Elixir.UnicodeConversionError', message := Message} ->
+          {error, {?LOC(Line, Column), "invalid encoding in atom: ", elixir_utils:characters_to_list(Message)}}
+      end
   end;
-unsafe_to_atom(List, _Line, _Column, #credo_elixir_tokenizer{}) when is_list(List) ->
-  {ok, list_to_atom(List)}.
+unsafe_to_atom(List, Line, Column, #credo_elixir_tokenizer{}) when is_list(List) ->
+  try
+    {ok, list_to_atom(List)}
+  catch
+    error:badarg ->
+      % Try to convert using elixir_utils to get proper UnicodeConversionError
+      try
+        elixir_utils:characters_to_binary(List),
+        % If we get here, it's not a UTF-8 issue, so it's some other badarg
+        {error, {?LOC(Line, Column), "invalid atom: ", List}}
+      catch
+        error:#{'__struct__' := 'Elixir.UnicodeConversionError', message := Message} ->
+          {error, {?LOC(Line, Column), "invalid encoding in atom: ", elixir_utils:characters_to_list(Message)}}
+      end
+  end.
 
 collect_modifiers([H | T], Buffer) when ?is_downcase(H) or ?is_upcase(H) or ?is_digit(H) ->
   collect_modifiers(T, [H | Buffer]);
@@ -1066,7 +1153,12 @@ extract_heredoc_with_interpolation(Line, Column, Scope, Interpol, T, H) ->
           {Parts1, {ShouldWarn, _}} = lists:mapfoldl(Fun, {false, Line}, Parts0),
           Parts2 = extract_heredoc_head(Parts1),
           NewScope = maybe_heredoc_warn(ShouldWarn, Column, InterScope, H),
-          {ok, NewLine, NewColumn, tokens_to_binary(Parts2), Rest, NewScope};
+          try
+            {ok, NewLine, NewColumn, tokens_to_binary(Parts2), Rest, NewScope}
+          catch
+            error:#{'__struct__' := 'Elixir.UnicodeConversionError', message := Message} ->
+              {error, interpolation_format(Message, " (for heredoc starting at line ~B)", [Line], Line, Column, [H, H, H], [H, H, H])}
+          end;
 
         {error, Reason} ->
           {error, interpolation_format(Reason, " (for heredoc starting at line ~B)", [Line], Line, Column, [H, H, H], [H, H, H])}
@@ -1137,8 +1229,13 @@ unescape_tokens(Tokens, Line, Column, #credo_elixir_tokenizer{unescape=true}) ->
     {error, Message, Token} ->
       {error, {?LOC(Line, Column), Message ++ ". Syntax error after: ", Token}}
   end;
-unescape_tokens(Tokens, _Line, _Column, #credo_elixir_tokenizer{unescape=false}) ->
-  {ok, tokens_to_binary(Tokens)}.
+unescape_tokens(Tokens, Line, Column, #credo_elixir_tokenizer{unescape=false}) ->
+  try
+    {ok, tokens_to_binary(Tokens)}
+  catch
+    error:#{'__struct__' := 'Elixir.UnicodeConversionError', message := Message} ->
+      {error, {?LOC(Line, Column), "invalid encoding in tokens: ", elixir_utils:characters_to_list(Message)}}
+  end.
 
 tokens_to_binary(Tokens) ->
   [if is_list(Token) -> elixir_utils:characters_to_binary(Token); true -> Token end
@@ -1224,16 +1321,17 @@ tokenize_comment("\r\n" ++ _ = Rest, Acc) ->
 tokenize_comment("\n" ++ _ = Rest, Acc) ->
   {Rest, lists:reverse(Acc)};
 tokenize_comment([H | _Rest], _) when ?bidi(H) ->
-  {error, H};
+  {error, H, "invalid bidirectional formatting character in comment: "};
+tokenize_comment([H | _Rest], _) when ?break(H) ->
+  {error, H, "invalid line break character in comment: "};
 tokenize_comment([H | Rest], Acc) ->
   tokenize_comment(Rest, [H | Acc]);
 tokenize_comment([], Acc) ->
   {[], lists:reverse(Acc)}.
 
-error_comment(H, Comment, Line, Column, Scope, Tokens) ->
-  Token = io_lib:format("\\u~4.16.0B", [H]),
-  Reason = {?LOC(Line, Column), "invalid bidirectional formatting character in comment: ", Token},
-  error(Reason, Comment, Scope, Tokens).
+error_comment(Char, Reason, Comment, Line, Column, Scope, Tokens) ->
+  Token = io_lib:format("\\u~4.16.0B", [Char]),
+  error({?LOC(Line, Column), Reason, Token}, Comment, Scope, Tokens).
 
 preserve_comments(Line, Column, Tokens, Comment, Rest, Scope) ->
   case Scope#credo_elixir_tokenizer.preserve_comments of
