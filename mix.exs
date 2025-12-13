@@ -4,18 +4,33 @@ defmodule CredoTokenizer.MixProject do
   def project do
     [
       app: :credo_tokenizer,
-      version: "0.2.0",
+      version: "0.2.1",
       elixir: "~> 1.15",
+      description: "A fork of Elixir's tokenizer for Credo",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      package: package()
+    ]
+  end
+
+  defp package do
+    [
+      files: [
+        "lib",
+        "src",
+        "LICENSE",
+        "mix.exs",
+        "README.md"
+      ],
+      maintainers: ["René Föhring"],
+      licenses: ["MIT"],
+      links: %{}
     ]
   end
 
   # Run "mix help compile.app" to learn about applications.
   def application do
-    [
-      extra_applications: [:logger]
-    ]
+    [extra_applications: [:logger]]
   end
 
   # Run "mix help deps" to learn about dependencies.
