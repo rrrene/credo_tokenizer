@@ -29,6 +29,9 @@ cp src/elixir_tokenizer.erl $PROJECT_ROOT/src/credo_elixir_tokenizer.erl
 cp src/elixir_tokenizer.hrl $PROJECT_ROOT/src/credo_elixir_tokenizer.hrl
 cp src/elixir.hrl $PROJECT_ROOT/src/credo_elixir.hrl
 
+echo "tag: $(git describe --tags HEAD) [sha1: $(git rev-parse --short HEAD)]" > $PROJECT_ROOT/src/credo_elixir_tokenizer.txt
+
+
 cd $PROJECT_ROOT/src/
 
 find . -type f -exec sed -i 's/elixir_tokenizer/credo_elixir_tokenizer/g' {} \;
