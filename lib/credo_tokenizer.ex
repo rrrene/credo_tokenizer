@@ -36,7 +36,7 @@ defmodule CredoTokenizer do
   #       kind,       # {type, sub_type},
   #       location,   # {line, column, line_after, column_after},
   #       contents,   # binary or list
-  #       meta        # map with more info
+  #       info        # map with more info
   #     }
   #
 

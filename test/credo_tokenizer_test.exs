@@ -157,6 +157,32 @@ defmodule CredoTokenizerTest do
     assert [] != tokens
   end
 
+  test "should give correct token position for expected code including comment" do
+    tokens =
+      CredoTokenizer.tokenize!(~S'''
+      a = 1
+      #this is comment
+
+      b = a + 2
+      ''')
+
+    assert [
+             {{:identifier, nil}, {1, 1, 1, 2}, :a, nil},
+             {{:match_op, nil}, {1, 3, 1, 4}, :=, nil},
+             {{:int, nil}, {1, 5, 1, 6}, ~c"1", nil},
+             {{:eol, nil}, {1, 6, 2, 1}, 1, nil},
+             {{:comment, nil}, {2, 1, 2, 17}, ~c"#this is comment", nil},
+             {{:eol, nil}, {2, 17, 3, 1}, 1, nil},
+             {{:eol, nil}, {3, 1, 4, 1}, 1, nil},
+             {{:identifier, nil}, {4, 1, 4, 2}, :b, nil},
+             {{:match_op, nil}, {4, 3, 4, 4}, :=, nil},
+             {{:identifier, nil}, {4, 5, 4, 6}, :a, nil},
+             {{:dual_op, nil}, {4, 7, 4, 9}, :+, nil},
+             {{:int, nil}, {4, 9, 4, 10}, ~c"2", nil},
+             {{:eol, nil}, {4, 10, 5, 1}, 1, nil}
+           ] == tokens
+  end
+
   test "should give correct token position for @ as keyword in list" do
     tokens = CredoTokenizer.tokenize!("[@: 1]")
 

@@ -201,8 +201,8 @@ tokenize([$# | String], Line, Column, Scope, Tokens) ->
     {error, Char, Reason} ->
       error_comment(Char, Reason, [$# | String], Line, Column, Scope, Tokens);
     {Rest, Comment} ->
-      preserve_comments(Line, Column, Tokens, Comment, Rest, Scope),
-      tokenize(Rest, Line, Column, Scope, reset_eol(Tokens))
+      Token = {comment, {Line, Column, nil, Line, Column + length(Comment)}, Comment},
+      tokenize(Rest, Line, Column + length(Comment), Scope, reset_eol([Token | Tokens]))
   end;
 
 % Sigils
