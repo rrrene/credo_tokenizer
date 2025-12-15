@@ -23,7 +23,7 @@ defmodule CredoTokenizer.MixProject do
         "README.md"
       ],
       maintainers: ["René Föhring"],
-      licenses: ["MIT"],
+      licenses: ["Apache-2.0"],
       links: %{}
     ]
   end
