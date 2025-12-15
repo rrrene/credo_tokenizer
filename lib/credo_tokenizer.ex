@@ -67,11 +67,20 @@ defmodule CredoTokenizer do
     }
   end
 
+  defp normalize({:comment, {line, column, nil, line_after, column_after}, value}) do
+    {
+      to_kind(:comment),
+      {line, column, line_after, column_after},
+      to_string(value),
+      nil
+    }
+  end
+
   defp normalize({kind, {line, column, _, line_after, column_after}, value}) do
     {
       to_kind(kind),
       {line, column, line_after, column_after},
-      value,
+      normalize_interpol(value),
       nil
     }
   end
@@ -80,7 +89,7 @@ defmodule CredoTokenizer do
     {
       to_kind(:bin_heredoc),
       {line, column, line_after, column_after},
-      heredoc_contents,
+      normalize_interpol(heredoc_contents),
       %{
         indent: indent
       }
@@ -91,7 +100,7 @@ defmodule CredoTokenizer do
     {
       to_kind(:list_heredoc),
       {line, column, line_after, column_after},
-      heredoc_contents,
+      normalize_interpol(heredoc_contents),
       %{
         indent: indent
       }
@@ -105,7 +114,7 @@ defmodule CredoTokenizer do
     {
       to_kind(:sigil, sigil_name),
       {line, column, line_after, column_after},
-      sigil_contents,
+      normalize_interpol(sigil_contents),
       %{
         indent: indent,
         modifiers: modifiers,
@@ -184,6 +193,27 @@ defmodule CredoTokenizer do
       ">>",
       nil
     }
+  end
+
+  defp normalize_interpol({{line, column, nil}, {line_after, column_after, nil}, contents}) do
+    {
+      to_kind(:interpol),
+      {line, column, line_after, column_after},
+      normalize_interpol(contents),
+      nil
+    }
+  end
+
+  defp normalize_interpol([_ | _] = contents) do
+    Enum.map(contents, &normalize_interpol/1)
+  end
+
+  defp normalize_interpol(v) when is_atom(v) or is_binary(v) or is_map(v) or is_number(v) do
+    v
+  end
+
+  defp normalize_interpol(value) do
+    normalize(value)
   end
 
   defp to_kind(:bin_string), do: {:string, :binary}

@@ -46,20 +46,28 @@ defmodule CredoTokenizerTest do
       ''')
 
     expected = [
-      {{:string, :binary}, {1, 1, 1, 17},
-       [
-         {{1, 2, nil}, {1, 6, nil}, [{:identifier, {1, 4, ~c"a", 1, 5}, :a}]},
-         " ",
-         {{1, 7, nil}, {1, 16, nil},
-          [
-            {:identifier, {1, 9, ~c"a", 1, 10}, :a},
-            {:concat_op, {1, 11, nil, 1, 13}, :++},
-            {:identifier, {1, 14, ~c"b", 1, 15}, :b}
-          ]}
-       ], nil},
+      {
+        {:string, :binary},
+        {1, 1, 1, 17},
+        [
+          {{:interpol, nil}, {1, 2, 1, 6}, [{{:identifier, nil}, {1, 4, 1, 5}, :a, nil}], nil},
+          " ",
+          {{:interpol, nil}, {1, 7, 1, 16},
+           [
+             {{:identifier, nil}, {1, 9, 1, 10}, :a, nil},
+             {{:concat_op, nil}, {1, 11, 1, 13}, :++, nil},
+             {{:identifier, nil}, {1, 14, 1, 15}, :b, nil}
+           ], nil}
+        ],
+        nil
+      },
       {{:eol, nil}, {1, 17, 2, 1}, 1, nil},
-      {{:atom_unsafe, nil}, {2, 1, 2, 13},
-       ["b_", {{2, 5, nil}, {2, 11, nil}, [{:identifier, {2, 8, ~c"a", 2, 9}, :a}]}, "_"], nil},
+      {
+        {:atom_unsafe, nil},
+        {2, 1, 2, 13},
+        ["b_", {{:interpol, nil}, {2, 5, 2, 11}, [{{:identifier, nil}, {2, 8, 2, 9}, :a, nil}], nil}, "_"],
+        nil
+      },
       {{:eol, nil}, {2, 13, 3, 1}, 1, nil}
     ]
 
@@ -178,7 +186,7 @@ defmodule CredoTokenizerTest do
              {{:match_op, nil}, {1, 3, 1, 4}, :=, nil},
              {{:int, nil}, {1, 5, 1, 6}, ~c"1", nil},
              {{:eol, nil}, {1, 6, 2, 1}, 1, nil},
-             {{:comment, nil}, {2, 1, 2, 17}, ~c"#this is comment", nil},
+             {{:comment, nil}, {2, 1, 2, 17}, "#this is comment", nil},
              {{:eol, nil}, {2, 17, 3, 1}, 1, nil},
              {{:eol, nil}, {3, 1, 4, 1}, 1, nil},
              {{:identifier, nil}, {4, 1, 4, 2}, :b, nil},
@@ -295,12 +303,13 @@ defmodule CredoTokenizerTest do
   #   end)
   # end
 
-  # test "should tokenize fixture" do
-  #   "test/fixtures/learnelixir.ex"
-  #   |> File.read!()
-  #   |> CredoTokenizer.tokenize()
-  #   |> Enum.map(&elem(&1, 0))
-  #   |> Enum.uniq()
-  #   |> dbg
-  # end
+  test "should tokenize fixture" do
+    "test/fixtures/learnelixir.ex"
+    |> File.read!()
+    |> CredoTokenizer.tokenize!()
+
+    # |> Enum.map(&elem(&1, 0))
+    # |> Enum.uniq()
+    # |> dbg
+  end
 end
