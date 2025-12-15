@@ -62,14 +62,14 @@ extract([$#, ${ | Rest], Buffer, Output, Line, Column, Scope, true, Last) ->
       NewScope = Scope#credo_elixir_tokenizer{warnings=Warnings},
       {line, EndLine} = lists:keyfind(line, 1, Location),
       {column, EndColumn} = lists:keyfind(column, 1, Location),
-      Output2 = build_interpol(Line, Column, EndLine, EndColumn, lists:reverse(Tokens), Output1),
+      Output2 = build_interpol(Line, Column, EndLine, EndColumn + 1, lists:reverse(Tokens), Output1),
       extract(NewRest, [], Output2, EndLine, EndColumn + 1, NewScope, true, Last);
     {error, Reason, _, _, _} ->
       {error, Reason};
     {ok, EndLine, EndColumn, Warnings, Tokens, Terminators} when Scope#credo_elixir_tokenizer.cursor_completion /= false ->
       NewScope = Scope#credo_elixir_tokenizer{warnings=Warnings, cursor_completion=noprune},
       {CursorTerminators, _} = cursor_complete(EndLine, EndColumn, Terminators),
-      Output2 = build_interpol(Line, Column, EndLine, EndColumn, lists:reverse(Tokens, CursorTerminators), Output1),
+      Output2 = build_interpol(Line, Column, EndLine, EndColumn + 1, lists:reverse(Tokens, CursorTerminators), Output1),
       extract([], [], Output2, EndLine, EndColumn, NewScope, true, Last);
     {ok, _, _, _, _, _} ->
       {error, {string, Line, Column, "missing interpolation terminator: \"}\"", []}}

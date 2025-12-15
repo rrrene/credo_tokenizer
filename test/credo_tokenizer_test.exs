@@ -38,24 +38,29 @@ defmodule CredoTokenizerTest do
     assert tokens == expected
   end
 
-  test "should give correct token position for strings" do
+  test "should give correct token position for intepolations in strings" do
     tokens =
       CredoTokenizer.tokenize!(~S'''
-      "#{a} #{a}"
-      :"b_#{a}_"
+      "#{a} #{a ++ b}"
+      :"b_#{ a }_"
       ''')
 
     expected = [
-      {{:string, :binary}, {1, 1, 1, 12},
+      {{:string, :binary}, {1, 1, 1, 17},
        [
-         {{1, 2, nil}, {1, 5, nil}, [{:identifier, {1, 4, ~c"a", 1, 5}, :a}]},
+         {{1, 2, nil}, {1, 6, nil}, [{:identifier, {1, 4, ~c"a", 1, 5}, :a}]},
          " ",
-         {{1, 7, nil}, {1, 10, nil}, [{:identifier, {1, 9, ~c"a", 1, 10}, :a}]}
+         {{1, 7, nil}, {1, 16, nil},
+          [
+            {:identifier, {1, 9, ~c"a", 1, 10}, :a},
+            {:concat_op, {1, 11, nil, 1, 13}, :++},
+            {:identifier, {1, 14, ~c"b", 1, 15}, :b}
+          ]}
        ], nil},
-      {{:eol, nil}, {1, 12, 2, 1}, 1, nil},
-      {{:atom_unsafe, nil}, {2, 1, 2, 11},
-       ["b_", {{2, 5, nil}, {2, 8, nil}, [{:identifier, {2, 7, ~c"a", 2, 8}, :a}]}, "_"], nil},
-      {{:eol, nil}, {2, 11, 3, 1}, 1, nil}
+      {{:eol, nil}, {1, 17, 2, 1}, 1, nil},
+      {{:atom_unsafe, nil}, {2, 1, 2, 13},
+       ["b_", {{2, 5, nil}, {2, 11, nil}, [{:identifier, {2, 8, ~c"a", 2, 9}, :a}]}, "_"], nil},
+      {{:eol, nil}, {2, 13, 3, 1}, 1, nil}
     ]
 
     assert tokens == expected
@@ -110,7 +115,9 @@ defmodule CredoTokenizerTest do
       Mix.raise("""
       Unused dependencies in mix.lock file:
 
-      #{Enum.map_join(unused_apps, "\n", fn app -> "  * #{inspect(app)}" end)}
+      #{Enum.map_join(unused_apps, "\n", fn app -> "  * #{inspect(app)}" end)} !
+
+      end
       """)
       ''')
 
