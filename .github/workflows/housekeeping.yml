@@ -22,7 +22,7 @@ jobs:
           elixir-version: 1.19.4
       - run: mix deps.get
       - run: mix compile
-      - run: ./test/check_formatted.sh
+      - run: mix format --check-formatted
 
   no_deps_compiler_warnings:
     name: "compiling deps shows no compiler warnings (optional)"
