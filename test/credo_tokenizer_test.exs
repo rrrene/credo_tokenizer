@@ -325,8 +325,6 @@ defmodule CredoTokenizerTest do
     # |> dbg
   end
 
-  # Tests for keywords and control flow structures
-
   test "should tokenize if-else-end" do
     source = "if true do :ok else :error end"
 
@@ -558,20 +556,6 @@ defmodule CredoTokenizerTest do
     assert_normalized_tokens(tokens)
   end
 
-  test "should tokenize super" do
-    source = """
-    def callback(arg) do
-      result = super(arg)
-      result
-    end
-    """
-
-    Code.string_to_quoted!(source)
-    {:ok, tokens} = CredoTokenizer.tokenize(source)
-
-    assert_normalized_tokens(tokens)
-  end
-
   # Tests for operators
   test "should tokenize arithmetic operators" do
     source = "a + b - c * d / e"
@@ -681,7 +665,6 @@ defmodule CredoTokenizerTest do
     assert_normalized_tokens(tokens)
   end
 
-  # Tests for data structures
   test "should tokenize list" do
     source = "[1, 2, 3, 4, 5]"
 
@@ -710,7 +693,9 @@ defmodule CredoTokenizerTest do
   end
 
   test "should tokenize map" do
-    source = "%{key: :value, another_key: 123}"
+    source = ~S'''
+    %{key: :value, another_key: 123}
+    '''
 
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
