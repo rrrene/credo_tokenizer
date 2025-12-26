@@ -2,6 +2,10 @@ defmodule CredoTokenizerTest do
   use ExUnit.Case
   doctest CredoTokenizer
 
+  defp normalized_token?(token) do
+    tuple_size(token) == 4
+  end
+
   test "should give correct token position for regexes" do
     tokens =
       CredoTokenizer.tokenize!(~S'''
@@ -319,7 +323,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize unless-do-end" do
@@ -327,7 +331,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize case-when" do
@@ -341,7 +345,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize cond" do
@@ -354,7 +358,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize with statement" do
@@ -369,7 +373,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize try-rescue-catch-after" do
@@ -387,7 +391,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize receive block" do
@@ -402,7 +406,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   # Tests for module definition constructs
@@ -415,7 +419,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize def and defp" do
@@ -426,7 +430,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize defmacro and defmacrop" do
@@ -439,7 +443,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize defstruct" do
@@ -451,7 +455,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize defexception" do
@@ -463,7 +467,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize defprotocol and defimpl" do
@@ -479,7 +483,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   # Tests for special forms
@@ -488,7 +492,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize require" do
@@ -496,7 +500,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize alias" do
@@ -504,7 +508,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize use" do
@@ -512,7 +516,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize quote and unquote" do
@@ -524,7 +528,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize super" do
@@ -537,7 +541,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   # Tests for operators
@@ -546,7 +550,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize comparison operators" do
@@ -554,7 +558,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize boolean operators" do
@@ -562,7 +566,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize pipe operator" do
@@ -570,7 +574,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize match operator" do
@@ -578,7 +582,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize pin operator" do
@@ -586,7 +590,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize capture operator" do
@@ -594,7 +598,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize range operator" do
@@ -602,7 +606,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize concat operators" do
@@ -610,7 +614,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize in operator" do
@@ -618,7 +622,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize type operator" do
@@ -626,7 +630,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   # Tests for data structures
@@ -635,7 +639,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize list with head and tail" do
@@ -643,7 +647,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize tuple" do
@@ -651,7 +655,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize map" do
@@ -659,7 +663,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize map update syntax" do
@@ -667,7 +671,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize struct" do
@@ -675,7 +679,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize keyword list" do
@@ -683,7 +687,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize charlist" do
@@ -691,7 +695,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   # Tests for literals
@@ -700,7 +704,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize integers" do
@@ -708,7 +712,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize floats" do
@@ -716,7 +720,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize boolean atoms" do
@@ -724,7 +728,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize single char" do
@@ -732,7 +736,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   # Tests for comprehensions
@@ -741,7 +745,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize for comprehension with filter" do
@@ -749,7 +753,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize for comprehension with multiple generators" do
@@ -757,7 +761,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize for comprehension with into" do
@@ -765,7 +769,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   # Tests for module attributes
@@ -780,7 +784,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize callback attribute" do
@@ -791,7 +795,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize compile attributes" do
@@ -799,7 +803,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   # Tests for guards
@@ -812,7 +816,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize multiple guard clauses" do
@@ -824,7 +828,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   # Tests for bitstrings and binaries
@@ -833,7 +837,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize binary pattern matching" do
@@ -841,7 +845,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize binary with modifiers" do
@@ -849,7 +853,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize utf8 binary" do
@@ -857,7 +861,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   # Tests for sigils
@@ -866,7 +870,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize sigil_s string" do
@@ -874,7 +878,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize sigil_w word list" do
@@ -882,7 +886,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize sigil_w with atoms modifier" do
@@ -890,7 +894,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize sigil_D date" do
@@ -898,7 +902,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize sigil_T time" do
@@ -906,7 +910,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize sigil_N naive datetime" do
@@ -914,7 +918,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize sigil_U datetime" do
@@ -922,7 +926,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize custom sigil" do
@@ -930,7 +934,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   # Tests for Elixir idioms and patterns
@@ -944,7 +948,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize anonymous function with multiple clauses" do
@@ -957,7 +961,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize pattern matching in function head" do
@@ -968,7 +972,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize default arguments" do
@@ -976,7 +980,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize module nesting" do
@@ -990,7 +994,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize multiline function with do-end" do
@@ -1004,7 +1008,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize typespecs" do
@@ -1015,7 +1019,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize behaviour definition" do
@@ -1028,7 +1032,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize documentation with examples" do
@@ -1047,7 +1051,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize access protocol" do
@@ -1055,7 +1059,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize dot access" do
@@ -1063,7 +1067,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize kernel inspect" do
@@ -1071,7 +1075,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize raise and throw" do
@@ -1082,7 +1086,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize send and spawn" do
@@ -1093,7 +1097,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize apply and function references" do
@@ -1104,7 +1108,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize stream operations" do
@@ -1112,7 +1116,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize erlang interop" do
@@ -1120,7 +1124,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize multiline strings" do
@@ -1132,7 +1136,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize escape sequences" do
@@ -1140,7 +1144,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize unicode" do
@@ -1148,7 +1152,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize underscored variables" do
@@ -1156,7 +1160,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize question mark functions" do
@@ -1164,7 +1168,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize exclamation mark functions" do
@@ -1172,7 +1176,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize backslash default parameter operator" do
@@ -1180,7 +1184,7 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize arrow in lambda" do
@@ -1188,6 +1192,6 @@ defmodule CredoTokenizerTest do
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
     assert is_list(tokens)
-    assert Enum.all?(tokens, fn token -> tuple_size(token) == 4 end)
+    assert Enum.all?(tokens, &normalized_token?/1)
   end
 end
