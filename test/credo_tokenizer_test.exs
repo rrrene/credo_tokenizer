@@ -778,11 +778,7 @@ defmodule CredoTokenizerTest do
 
   # Tests for literals
   test "should tokenize atoms" do
-    source = """
-    :atom
-    :another_atom
-    :\"atom with spaces\"
-    """
+    source = ":atom\n:another_atom\n:\"atom with spaces\""
 
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
@@ -792,13 +788,7 @@ defmodule CredoTokenizerTest do
   end
 
   test "should tokenize integers" do
-    source = """
-    123
-    0x1F
-    0o17
-    0b1010
-    1_000_000
-    """
+    source = "123\n0x1F\n0o17\n0b1010\n1_000_000"
 
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
@@ -808,12 +798,7 @@ defmodule CredoTokenizerTest do
   end
 
   test "should tokenize floats" do
-    source = """
-    1.0
-    3.14
-    1.0e10
-    1.5e-5
-    """
+    source = "1.0\n3.14\n1.0e10\n1.5e-5"
 
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
@@ -823,11 +808,7 @@ defmodule CredoTokenizerTest do
   end
 
   test "should tokenize boolean atoms" do
-    source = """
-    true
-    false
-    nil
-    """
+    source = "true\nfalse\nnil"
 
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
@@ -837,11 +818,7 @@ defmodule CredoTokenizerTest do
   end
 
   test "should tokenize single char" do
-    source = """
-    ?a
-    ?1
-    ?\\n
-    """
+    source = "?a\n?1\n?\\n"
 
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
