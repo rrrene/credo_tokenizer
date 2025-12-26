@@ -2,6 +2,7 @@ defmodule CredoTokenizerTest do
   use ExUnit.Case
   doctest CredoTokenizer
 
+  # Validates that a token is a normalized 4-element tuple as produced by CredoTokenizer
   defp normalized_token?(token) do
     tuple_size(token) == 4
   end
