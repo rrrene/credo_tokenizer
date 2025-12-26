@@ -319,18 +319,23 @@ defmodule CredoTokenizerTest do
   end
 
   # Tests for keywords and control flow structures
+
   test "should tokenize if-else-end" do
     source = "if true do :ok else :error end"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize unless-do-end" do
     source = "unless false do :ok end"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -343,8 +348,10 @@ defmodule CredoTokenizerTest do
       _ -> :other
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -356,8 +363,10 @@ defmodule CredoTokenizerTest do
       true -> :fallback
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -371,8 +380,10 @@ defmodule CredoTokenizerTest do
       error -> error
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -389,8 +400,10 @@ defmodule CredoTokenizerTest do
       cleanup()
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -404,8 +417,10 @@ defmodule CredoTokenizerTest do
       1000 -> :timeout
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -417,8 +432,10 @@ defmodule CredoTokenizerTest do
       def hello, do: :world
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -428,8 +445,10 @@ defmodule CredoTokenizerTest do
     def public_function(x), do: private_function(x)
     defp private_function(x), do: x * 2
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -441,8 +460,10 @@ defmodule CredoTokenizerTest do
     end
     defmacrop private_macro(x), do: x
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -453,8 +474,10 @@ defmodule CredoTokenizerTest do
       defstruct name: nil, age: 0, email: ""
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -465,8 +488,10 @@ defmodule CredoTokenizerTest do
       defexception message: "default error"
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -481,8 +506,10 @@ defmodule CredoTokenizerTest do
       def reverse(list), do: Enum.reverse(list)
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -490,32 +517,40 @@ defmodule CredoTokenizerTest do
   # Tests for special forms
   test "should tokenize import" do
     source = "import Enum, only: [map: 2]"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize require" do
     source = "require Logger"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize alias" do
     source = "alias My.Long.Module.Name, as: Name"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize use" do
     source = "use GenServer"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -526,8 +561,10 @@ defmodule CredoTokenizerTest do
       def name, do: unquote(value)
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -539,8 +576,10 @@ defmodule CredoTokenizerTest do
       result
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -548,88 +587,110 @@ defmodule CredoTokenizerTest do
   # Tests for operators
   test "should tokenize arithmetic operators" do
     source = "a + b - c * d / e"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize comparison operators" do
     source = "a == b != c < d > e <= f >= g === h !== i"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize boolean operators" do
     source = "a and b or c not d && e || f"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize pipe operator" do
     source = "value |> transform() |> process()"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize match operator" do
     source = "{:ok, result} = fetch()"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize pin operator" do
     source = "case x do ^y -> :match end"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize capture operator" do
     source = "&(&1 + &2)"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize range operator" do
     source = "1..10"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize concat operators" do
     source = "[1] ++ [2] -- [3] <> \"text\""
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize in operator" do
     source = "x in [1, 2, 3]"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize type operator" do
     source = "1 :: integer"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -637,64 +698,80 @@ defmodule CredoTokenizerTest do
   # Tests for data structures
   test "should tokenize list" do
     source = "[1, 2, 3, 4, 5]"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize list with head and tail" do
     source = "[head | tail]"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize tuple" do
     source = "{:ok, :error, :pending}"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize map" do
     source = "%{key: :value, \"string\" => 123}"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize map update syntax" do
     source = "%{map | key: new_value}"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize struct" do
     source = "%User{name: \"John\", age: 30}"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize keyword list" do
     source = "[name: \"John\", age: 30, active: true]"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize charlist" do
     source = "~c\"hello\""
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -702,40 +779,50 @@ defmodule CredoTokenizerTest do
   # Tests for literals
   test "should tokenize atoms" do
     source = ":atom :another_atom :\"atom with spaces\""
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize integers" do
     source = "123 0x1F 0o17 0b1010 1_000_000"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize floats" do
     source = "1.0 3.14 1.0e10 1.5e-5"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize boolean atoms" do
     source = "true false nil"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize single char" do
     source = "?a ?1 ?\\n"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -743,32 +830,40 @@ defmodule CredoTokenizerTest do
   # Tests for comprehensions
   test "should tokenize for comprehension" do
     source = "for x <- [1, 2, 3], do: x * 2"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize for comprehension with filter" do
     source = "for x <- 1..10, x > 5, do: x"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize for comprehension with multiple generators" do
     source = "for x <- [1, 2], y <- [3, 4], do: x * y"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize for comprehension with into" do
     source = "for x <- [1, 2, 3], into: %{}, do: {x, x * 2}"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -782,8 +877,10 @@ defmodule CredoTokenizerTest do
     @type my_type :: integer
     @custom_attribute :value
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -793,16 +890,20 @@ defmodule CredoTokenizerTest do
     @callback handle(term) :: term
     @macrocallback my_macro(term) :: Macro.t()
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize compile attributes" do
     source = "@compile :inline"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -814,8 +915,10 @@ defmodule CredoTokenizerTest do
       x * 2
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -826,8 +929,10 @@ defmodule CredoTokenizerTest do
       true
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -835,32 +940,40 @@ defmodule CredoTokenizerTest do
   # Tests for bitstrings and binaries
   test "should tokenize binary" do
     source = "<<1, 2, 3>>"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize binary pattern matching" do
     source = "<<x::8, y::16, rest::binary>> = data"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize binary with modifiers" do
     source = "<<value::size(8)-unsigned-integer>>"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize utf8 binary" do
     source = "<<\"hello\"::utf8>>"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -868,72 +981,90 @@ defmodule CredoTokenizerTest do
   # Tests for sigils
   test "should tokenize sigil_c charlist" do
     source = "~c\"charlist\""
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize sigil_s string" do
     source = "~s\"string with \\\"quotes\\\"\""
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize sigil_w word list" do
     source = "~w(one two three)"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize sigil_w with atoms modifier" do
     source = "~w(one two three)a"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize sigil_D date" do
     source = "~D[2024-01-15]"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize sigil_T time" do
     source = "~T[13:45:30]"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize sigil_N naive datetime" do
     source = "~N[2024-01-15 13:45:30]"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize sigil_U datetime" do
     source = "~U[2024-01-15 13:45:30Z]"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize custom sigil" do
     source = "~x{custom sigil}abc"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -946,8 +1077,10 @@ defmodule CredoTokenizerTest do
     |> Enum.filter(&(&1 > 2))
     |> Enum.sum()
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -959,8 +1092,10 @@ defmodule CredoTokenizerTest do
       {:error, _} -> nil
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -970,16 +1105,20 @@ defmodule CredoTokenizerTest do
     def handle({:ok, result}), do: result
     def handle({:error, reason}), do: {:error, reason}
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize default arguments" do
-    source = "def greet(name \\\\ \"World\"), do: \"Hello, #{name}!\""
+    source = ~S[def greet(name \\ "World"), do: "Hello, #{name}!"]
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -992,8 +1131,10 @@ defmodule CredoTokenizerTest do
       end
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -1006,8 +1147,10 @@ defmodule CredoTokenizerTest do
       {:ok, result}
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -1017,8 +1160,10 @@ defmodule CredoTokenizerTest do
     @type user :: %{name: String.t(), age: non_neg_integer()}
     @spec get_user(id :: integer) :: {:ok, user} | {:error, term}
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -1030,8 +1175,10 @@ defmodule CredoTokenizerTest do
       @callback handle(term, term) :: term
     end
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -1049,32 +1196,40 @@ defmodule CredoTokenizerTest do
     \"\"\"
     def add(a, b), do: a + b
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize access protocol" do
     source = "map[:key]"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize dot access" do
     source = "map.field"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize kernel inspect" do
     source = "inspect(value, pretty: true)"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -1084,8 +1239,10 @@ defmodule CredoTokenizerTest do
     raise "error message"
     throw :value
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -1095,8 +1252,10 @@ defmodule CredoTokenizerTest do
     send(pid, {:message, data})
     spawn(fn -> work() end)
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -1106,24 +1265,30 @@ defmodule CredoTokenizerTest do
     apply(Mod, :fun, [arg1, arg2])
     &Mod.fun/2
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize stream operations" do
     source = "1..100 |> Stream.map(&(&1 * 2)) |> Enum.take(5)"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize erlang interop" do
     source = ":erlang.system_info(:process_count)"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
@@ -1134,64 +1299,80 @@ defmodule CredoTokenizerTest do
     multiline
     string"
     """
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize escape sequences" do
     source = "\"\\n\\t\\r\\\\\\\"\""
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize unicode" do
     source = "\"Hello 世界 🌍\""
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize underscored variables" do
     source = "_unused_var = compute()"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize question mark functions" do
     source = "valid? empty? present?"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize exclamation mark functions" do
     source = "Enum.fetch! File.read! String.to_integer!"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize backslash default parameter operator" do
     source = "def func(a, b \\\\ nil, c \\\\ [])"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
 
   test "should tokenize arrow in lambda" do
     source = "Enum.map([1, 2, 3], fn x -> x * 2 end)"
+
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
+
     assert is_list(tokens)
     assert Enum.all?(tokens, &normalized_token?/1)
   end
