@@ -837,7 +837,11 @@ defmodule CredoTokenizerTest do
   end
 
   test "should tokenize single char" do
-    source = "?a ?1 ?\\n"
+    source = """
+    ?a
+    ?1
+    ?\\n
+    """
 
     Code.string_to_quoted!(source)
     {:ok, tokens} = CredoTokenizer.tokenize(source)
