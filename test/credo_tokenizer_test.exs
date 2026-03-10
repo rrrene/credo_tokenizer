@@ -50,6 +50,53 @@ defmodule CredoTokenizerTest do
     assert tokens == expected
   end
 
+  test "should give correct token position for maps" do
+    tokens =
+      CredoTokenizer.tokenize!("%{ a: 1 }")
+
+    expected = [
+      {{:%{}, nil}, {1, 1, 1, 3}, "%{}", nil},
+      {{:"{", nil}, {1, 2, 1, 3}, "{", nil},
+      {{:kw_identifier, nil}, {1, 4, 1, 6}, :a, nil},
+      {{:int, nil}, {1, 7, 1, 8}, ~c"1", nil},
+      {{:"}", nil}, {1, 9, 1, 10}, "}", nil}
+    ]
+
+    assert tokens == expected
+  end
+
+  test "should give correct token position for maps with a newline" do
+    tokens =
+      CredoTokenizer.tokenize!(~S'''
+      %{
+      a: 1
+      }
+      ''')
+
+    expected = [
+      {{:%{}, nil}, {1, 1, 1, 3}, "%{}", nil},
+      {{:"{", nil}, {1, 2, 1, 3}, "{", nil},
+      {{:eol, nil}, {1, 3, 2, 1}, 1, nil},
+      {{:kw_identifier, nil}, {2, 1, 2, 3}, :a, nil},
+      {{:int, nil}, {2, 4, 2, 5}, ~c"1", nil},
+      {{:eol, nil}, {2, 5, 3, 1}, 1, nil},
+      {{:"}", nil}, {3, 1, 3, 2}, "}", nil},
+      {{:eol, nil}, {3, 2, 4, 1}, 1, nil}
+    ]
+
+    assert tokens == expected
+  end
+
+  test "should give correct token position for an atom looking like a map" do
+    tokens = CredoTokenizer.tokenize!(":%{}")
+
+    expected = [
+      {{:atom, nil}, {1, 1, 1, 5}, :%{}, nil}
+    ]
+
+    assert tokens == expected
+  end
+
   test "should give correct token position for intepolations in strings" do
     tokens =
       CredoTokenizer.tokenize!(~S'''

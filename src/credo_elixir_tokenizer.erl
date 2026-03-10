@@ -655,7 +655,7 @@ tokenize([$%, $[ | Rest], Line, Column, Scope, Tokens) ->
   error(Reason, Rest, Scope, Tokens);
 
 tokenize([$%, ${ | T], Line, Column, Scope, Tokens) ->
-  Token = {'{', {Line, Column, nil, Line, Column + 1}},
+  Token = {'{', {Line, Column + 1, nil, Line, Column + 2}},
   handle_terminator(T, Line, Column + 2, Scope, Token, [{'%{}', {Line, Column, nil, Line, Column + 2}} | Tokens]);
 
 tokenize([$% | T], Line, Column, Scope, Tokens) ->

@@ -8,12 +8,7 @@ defmodule CredoTokenizer do
     |> :credo_elixir_tokenizer.tokenize(1, file: filename, unescape: false)
     |> case do
       {:ok, _, _, _, tokens, _} ->
-        normalized_tokens =
-          tokens
-          |> Enum.reverse()
-          |> Enum.map(&normalize/1)
-
-        {:ok, normalized_tokens}
+        {:ok, normalize(tokens, [])}
 
       {:error, warnings, _, _, raw_tokens} ->
         # IO.warn("Could not tokenize: #{filename}")
@@ -29,6 +24,33 @@ defmodule CredoTokenizer do
       error -> raise "Could not tokenize: #{filename}\n\n#{inspect(error, pretty: true)}"
     end
   end
+
+  def normalize([], acc) do
+    acc
+  end
+
+  # The opening "token" of a map consists of two tokens when coming in from credo_elixir_tokenizer:
+  #     {:%{}, _}
+  #     {:"{", _}
+  #
+  # We remove the second token as it does nothing for our use case.
+  #
+  # def normalize([{:"{", _} = _to_be_removed, {:%{}, _} = token | rest], acc) do
+  #   normalize(rest, [normalize(token) | acc])
+  # end
+
+  def normalize([token | rest], acc) do
+    normalize(rest, [normalize(token) | acc])
+  end
+
+  # defp normalize({:%{}, {line, column, nil, line_after, column_after}}) do
+  #   {
+  #     to_kind(:"%{"),
+  #     {line, column, line_after, column_after},
+  #     "%{",
+  #     nil
+  #   }
+  # end
 
   # `normalize/1` normalizes the tokens into the following format:
   #
