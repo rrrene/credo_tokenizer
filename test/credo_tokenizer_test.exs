@@ -58,8 +58,70 @@ defmodule CredoTokenizerTest do
       {{:%{}, nil}, {1, 1, 1, 3}, "%{}", nil},
       {{:"{", nil}, {1, 2, 1, 3}, "{", nil},
       {{:kw_identifier, nil}, {1, 4, 1, 6}, :a, nil},
-      {{:int, nil}, {1, 7, 1, 8}, ~c"1", nil},
+      {{:number, :integer}, {1, 7, 1, 8}, "1", %{value: 1}},
       {{:"}", nil}, {1, 9, 1, 10}, "}", nil}
+    ]
+
+    assert tokens == expected
+  end
+
+  test "should give correct token position for basic types" do
+    tokens =
+      CredoTokenizer.tokenize!(~S'''
+      123
+      1_000
+      0x1F
+      1_000.0
+      1.0
+      1.0e-10
+      true
+      false
+      nil
+      :an_atom
+      "a string"
+      [1, 2, 3]
+      {1, 2, 3}
+      ''')
+
+    expected = [
+      {{:number, :integer}, {1, 1, 1, 4}, "123", %{value: 123}},
+      {{:eol, nil}, {1, 4, 2, 1}, 1, nil},
+      {{:number, :integer}, {2, 1, 2, 6}, "1_000", %{value: 1000}},
+      {{:eol, nil}, {2, 6, 3, 1}, 1, nil},
+      {{:number, :integer}, {3, 1, 3, 5}, "0x1F", %{value: 31}},
+      {{:eol, nil}, {3, 5, 4, 1}, 1, nil},
+      {{:number, :float}, {4, 1, 4, 8}, "1_000.0", %{value: 1000.0}},
+      {{:eol, nil}, {4, 8, 5, 1}, 1, nil},
+      {{:number, :float}, {5, 1, 5, 4}, "1.0", %{value: 1.0}},
+      {{:eol, nil}, {5, 4, 6, 1}, 1, nil},
+      {{:number, :float}, {6, 1, 6, 8}, "1.0e-10", %{value: 1.0e-10}},
+      {{:eol, nil}, {6, 8, 7, 1}, 1, nil},
+      {{:bool, nil}, {7, 1, 7, 5}, true, nil},
+      {{:eol, nil}, {7, 5, 8, 1}, 1, nil},
+      {{:bool, nil}, {8, 1, 8, 6}, false, nil},
+      {{:eol, nil}, {8, 6, 9, 1}, 1, nil},
+      {{nil, nil}, {9, 1, 9, 4}, nil, nil},
+      {{:eol, nil}, {9, 4, 10, 1}, 1, nil},
+      {{:atom, nil}, {10, 1, 10, 9}, :an_atom, nil},
+      {{:eol, nil}, {10, 9, 11, 1}, 1, nil},
+      {{:string, :binary}, {11, 1, 11, 11}, ["a string"], nil},
+      {{:eol, nil}, {11, 11, 12, 1}, 1, nil},
+      {{:"[", nil}, {12, 1, 12, 2}, "[", nil},
+      {{:number, :integer}, {12, 2, 12, 3}, "1", %{value: 1}},
+      {{:",", nil}, {12, 3, 12, 4}, 0, nil},
+      {{:number, :integer}, {12, 5, 12, 6}, "2", %{value: 2}},
+      {{:",", nil}, {12, 6, 12, 7}, 0, nil},
+      {{:number, :integer}, {12, 8, 12, 9}, "3", %{value: 3}},
+      {{:"]", nil}, {12, 9, 12, 10}, "]", nil},
+      {{:eol, nil}, {12, 10, 13, 1}, 1, nil},
+      {{:"{", nil}, {13, 1, 13, 2}, "{", nil},
+      {{:number, :integer}, {13, 2, 13, 3}, "1", %{value: 1}},
+      {{:",", nil}, {13, 3, 13, 4}, 0, nil},
+      {{:number, :integer}, {13, 5, 13, 6}, "2", %{value: 2}},
+      {{:",", nil}, {13, 6, 13, 7}, 0, nil},
+      {{:number, :integer}, {13, 8, 13, 9}, "3", %{value: 3}},
+      {{:"}", nil}, {13, 9, 13, 10}, "}", nil},
+      {{:eol, nil}, {13, 10, 14, 1}, 1, nil}
     ]
 
     assert tokens == expected
@@ -78,7 +140,7 @@ defmodule CredoTokenizerTest do
       {{:"{", nil}, {1, 2, 1, 3}, "{", nil},
       {{:eol, nil}, {1, 3, 2, 1}, 1, nil},
       {{:kw_identifier, nil}, {2, 1, 2, 3}, :a, nil},
-      {{:int, nil}, {2, 4, 2, 5}, ~c"1", nil},
+      {{:number, :integer}, {2, 4, 2, 5}, "1", %{value: 1}},
       {{:eol, nil}, {2, 5, 3, 1}, 1, nil},
       {{:"}", nil}, {3, 1, 3, 2}, "}", nil},
       {{:eol, nil}, {3, 2, 4, 1}, 1, nil}
@@ -243,7 +305,7 @@ defmodule CredoTokenizerTest do
     assert [
              {{:identifier, nil}, {1, 1, 1, 2}, :a, nil},
              {{:match_op, nil}, {1, 3, 1, 4}, :=, nil},
-             {{:int, nil}, {1, 5, 1, 6}, ~c"1", nil},
+             {{:number, :integer}, {1, 5, 1, 6}, "1", %{value: 1}},
              {{:eol, nil}, {1, 6, 2, 1}, 1, nil},
              {{:comment, nil}, {2, 1, 2, 17}, "#this is comment", nil},
              {{:eol, nil}, {2, 17, 3, 1}, 1, nil},
@@ -252,7 +314,7 @@ defmodule CredoTokenizerTest do
              {{:match_op, nil}, {4, 3, 4, 4}, :=, nil},
              {{:identifier, nil}, {4, 5, 4, 6}, :a, nil},
              {{:dual_op, nil}, {4, 7, 4, 9}, :+, nil},
-             {{:int, nil}, {4, 9, 4, 10}, ~c"2", nil},
+             {{:number, :integer}, {4, 9, 4, 10}, "2", %{value: 2}},
              {{:eol, nil}, {4, 10, 5, 1}, 1, nil}
            ] == tokens
   end
@@ -263,7 +325,7 @@ defmodule CredoTokenizerTest do
     expected = [
       {{:"[", nil}, {1, 1, 1, 2}, "[", nil},
       {{:kw_identifier, nil}, {1, 2, 1, 4}, :@, nil},
-      {{:int, nil}, {1, 5, 1, 6}, ~c"1", nil},
+      {{:number, :integer}, {1, 5, 1, 6}, "1", %{value: 1}},
       {{:"]", nil}, {1, 6, 1, 7}, "]", nil}
     ]
 

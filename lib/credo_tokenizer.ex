@@ -62,6 +62,15 @@ defmodule CredoTokenizer do
   #     }
   #
 
+  defp normalize({bool_or_nil, {line, column, _, line_after, column_after}}) when bool_or_nil in [true, false, nil] do
+    {
+      to_kind(bool_or_nil),
+      {line, column, line_after, column_after},
+      bool_or_nil,
+      nil
+    }
+  end
+
   defp normalize({kind, {line, column, nil, line_after, column_after}}) do
     {
       to_kind(kind),
@@ -86,6 +95,24 @@ defmodule CredoTokenizer do
       {line, column, line_after, column_after},
       to_string(value),
       nil
+    }
+  end
+
+  defp normalize({:int, {line, column, number, line_after, column_after}, value}) do
+    {
+      to_kind(:int),
+      {line, column, line_after, column_after},
+      to_string(value),
+      %{value: number}
+    }
+  end
+
+  defp normalize({:flt, {line, column, number, line_after, column_after}, value}) do
+    {
+      to_kind(:flt),
+      {line, column, line_after, column_after},
+      to_string(value),
+      %{value: number}
     }
   end
 
@@ -237,6 +264,13 @@ defmodule CredoTokenizer do
   defp normalize_interpol(value) do
     normalize(value)
   end
+
+  defp to_kind(true), do: {:bool, nil}
+  defp to_kind(false), do: {:bool, nil}
+  defp to_kind(nil), do: {nil, nil}
+
+  defp to_kind(:int), do: {:number, :integer}
+  defp to_kind(:flt), do: {:number, :float}
 
   defp to_kind(:bin_string), do: {:string, :binary}
   defp to_kind(:list_string), do: {:string, :list}
