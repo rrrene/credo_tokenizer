@@ -4,7 +4,7 @@ defmodule CredoTokenizer.MixProject do
   def project do
     [
       app: :credo_tokenizer,
-      version: "0.2.5",
+      version: "0.2.6",
       elixir: "~> 1.15",
       description: "A fork of Elixir's tokenizer for Credo",
       start_permanent: Mix.env() == :prod,
