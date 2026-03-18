@@ -294,6 +294,4 @@ defmodule CredoTokenizer do
 
   # other sigils
   defp to_kind(:sigil, sigil_name), do: {:sigil, String.replace("#{sigil_name}", ~r/^sigil_/, "")}
-
-  defp to_kind(kind, sub), do: {kind, sub}
 end
